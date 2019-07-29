@@ -1,8 +1,12 @@
-package br.usp.lucas.applicationbackend;
+package br.usp.lucas.applicationbackend.user;
 
 import javax.persistence.*;
 
 @Entity
+@NamedQueries({
+        @NamedQuery(name = "User.getAll", query = "select u from User u order by u.id"),
+        @NamedQuery(name = "User.getById", query = "select u from User u where u.id = :id")
+})
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
