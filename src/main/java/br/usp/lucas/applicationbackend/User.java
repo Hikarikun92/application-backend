@@ -1,23 +1,30 @@
 package br.usp.lucas.applicationbackend;
 
+import javax.persistence.*;
+
+@Entity
 public class User {
-    private int id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(nullable = false, length = 100)
     private String name;
+
+    @Column(nullable = false, length = 45)
     private String username;
+
+    @Column(length = 50)
     private String email;
 
-    public User(int id, String name, String username, String email) {
-        this.id = id;
-        this.name = name;
-        this.username = username;
-        this.email = email;
+    public User() {
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
