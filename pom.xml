@@ -2,12 +2,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <!-- This project will inherit from spring-boot-starter-parent, which contains the basic configurations and dependencies
+	definitions for any Spring Boot project. -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.1.6.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
+
+    <!-- The properties defined previously in Spring Initializr -->
     <groupId>br.usp.lucas</groupId>
     <artifactId>application-backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
@@ -15,24 +20,36 @@
     <description>Demo project for Spring Boot</description>
 
     <properties>
+        <!-- Use Java 11 for the project -->
         <java.version>11</java.version>
     </properties>
 
+    <!-- The dependencies the project will use. The spring-boot-starter ones are libraries developed by the Spring
+    community to both include the required dependencies and to also configure them automatically. For us, it is only
+     necessary to specify some properties in file application.properties. Notice that most of them don't include the
+      <version> tag in them; this is because spring-boot-starter-parent has already defined the most compatible ones.
+       For dependencies not managed by Spring Boot, we must include them. -->
     <dependencies>
+        <!-- Database integration -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
         </dependency>
+
+        <!-- Web configuration; we will need it to create our REST web services -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!-- Database implementation: use MySQL as the connector between our application and the database -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <scope>runtime</scope>
         </dependency>
+
+        <!-- Dependencies for unit and integration tests -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -42,11 +59,11 @@
 
     <build>
         <plugins>
+            <!-- Integration between Maven and Spring Boot -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
-
 </project>
