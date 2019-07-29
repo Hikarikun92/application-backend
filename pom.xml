@@ -36,6 +36,12 @@
             <artifactId>spring-boot-starter-jdbc</artifactId>
         </dependency>
 
+        <!-- Automatic migrations for the database -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+
         <!-- Web configuration; we will need it to create our REST web services -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
