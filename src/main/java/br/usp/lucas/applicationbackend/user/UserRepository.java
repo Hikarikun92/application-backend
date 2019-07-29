@@ -1,26 +1,8 @@
 package br.usp.lucas.applicationbackend.user;
 
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import javax.persistence.EntityManager;
-import java.util.List;
-
-@Repository
-public class UserRepository {
-    private final EntityManager entityManager;
-
-    public UserRepository(EntityManager entityManager) {
-        this.entityManager = entityManager;
-    }
-
-    public List<User> getAll() {
-        return entityManager.createNamedQuery("User.getAll", User.class)
-                .getResultList();
-    }
-
-    public User getById(Integer id) {
-        return entityManager.createNamedQuery("User.getById", User.class)
-                .setParameter("id", id)
-                .getSingleResult();
-    }
+//Notice that now we don't need to implement this interface, nor declare it as @Repository and we don't even need to use
+//the EntityManager; Spring will detect anything that is necessary and implement it for us
+public interface UserRepository extends JpaRepository<User, Integer> {
 }
