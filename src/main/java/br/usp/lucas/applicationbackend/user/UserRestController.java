@@ -1,6 +1,5 @@
 package br.usp.lucas.applicationbackend.user;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,37 +28,47 @@ public class UserRestController {
         return ResponseEntity.of(optional);
     }
 
-    /*
-    Problems with this method:
-    - We can pass an ID the body. If a user with that ID exists, it will be overwritten, which is not the intention of this method.
-    - If the ID does not exist, a new object will be created, but the ID returned in the location header might not be the correct one.
-
-    How can we solve those problems?
-     */
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<Void> create(@RequestBody User user) {
-        repository.save(user);
+        user.setId(null); //Ensure no existing object will be overwritten and the ID will be correctly set upon saving
+
+        repository.save(user); //The ID will be set in the same object in case we are creating a new row
         return ResponseEntity.created(URI.create("/users/" + user.getId())).build();
     }
 
-    /*
-    Problems with this method:
-    - The ID passed in the URL must match the one in the payload, otherwise we will try to edit an object but will overwrite another.
-    - If the ID does not exist, a new object will be created. Is that correct for this service?
-     */
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping(path = "{id}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public void update(@PathVariable Integer id, @RequestBody User user) {
-        repository.save(user);
+    public ResponseEntity<Void> update(@PathVariable Integer id, @RequestBody User user) {
+        final Optional<User> optional = repository.findById(id); //Ensure the object exists
+        if (optional.isPresent()) {
+            //If the object exists, set the values coming from the payload to it and ignore a possibly wrong ID
+            final User existingUser = optional.get();
+            existingUser.setName(user.getName());
+            existingUser.setUsername(user.getUsername());
+            existingUser.setEmail(user.getEmail());
+
+            repository.save(existingUser);
+
+            //Return an empty response
+            return ResponseEntity.noContent().build();
+        } else {
+            //If the object does not exist, do nothing and return a 404 Not Found error
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    /*
-     Problem with this method: what if the ID does not exist? The application is throwing an "Internal Server Error"!
-     */
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping(path = "{id}")
-    public void delete(@PathVariable Integer id) {
-        repository.deleteById(id);
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+        final Optional<User> optional = repository.findById(id); //Ensure the object exists
+        if (optional.isPresent()) {
+            //If the object exists, delete it
+            final User user = optional.get();
+            repository.delete(user);
+
+            //Return an empty response
+            return ResponseEntity.noContent().build();
+        } else {
+            //If the object does not exist, do nothing and return a 404 Not Found error
+            return ResponseEntity.notFound().build();
+        }
     }
 }
