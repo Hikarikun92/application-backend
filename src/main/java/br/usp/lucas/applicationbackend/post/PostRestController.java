@@ -17,22 +17,14 @@ public class PostRestController {
         this.repository = repository;
     }
 
-    /*
-    Problem: we are unable to call this web service and "get by ID"; Hibernate throws what we call a "lazy initialization exception".
-    This happens because we have already exited the database transaction (only the Repository class uses it for now) and
-    the User attribute was set to a proxy and cannot be fetched now, as we have specified it as "Lazy" in the Post entity.
-
-    A solution for this would be to make the mapping Post -> User eager; however, this will make the Users table be queried
-    as well, and when used without care, can ruin the application performance.
-     */
     @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public List<Post> getAll() {
-        return repository.findAll();
+        return repository.findAllWithUser();
     }
 
     @GetMapping(path = "{id}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<Post> getById(@PathVariable Integer id) {
-        final Optional<Post> optional = repository.findById(id);
+        final Optional<Post> optional = repository.findByIdWithUser(id);
         return ResponseEntity.of(optional);
     }
 
