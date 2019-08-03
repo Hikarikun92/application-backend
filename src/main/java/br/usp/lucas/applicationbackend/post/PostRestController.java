@@ -1,14 +1,17 @@
 package br.usp.lucas.applicationbackend.post;
 
+import br.usp.lucas.applicationbackend.post.dto.PostReadDto;
 import br.usp.lucas.applicationbackend.post.dto.PostWriteDto;
 import br.usp.lucas.applicationbackend.user.User;
 import br.usp.lucas.applicationbackend.user.UserRepository;
+import br.usp.lucas.applicationbackend.user.dto.UserReadDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,14 +27,42 @@ public class PostRestController {
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public List<Post> getAll() {
-        return repository.findAllWithUser();
+    public List<PostReadDto> getAll() {
+        final List<Post> posts = repository.findAllWithUser();
+
+        final List<PostReadDto> dtos = new ArrayList<>(posts.size());
+        for (Post post : posts) {
+            dtos.add(convertToReadDto(post));
+        }
+
+        return dtos;
+    }
+
+    private PostReadDto convertToReadDto(Post entity) {
+        final PostReadDto dto = new PostReadDto();
+        dto.setId(entity.getId());
+        dto.setTitle(entity.getTitle());
+        dto.setBody(entity.getBody());
+
+        final User user = entity.getUser();
+
+        final UserReadDto userDto = new UserReadDto();
+        userDto.setId(user.getId());
+        userDto.setName(user.getName());
+        userDto.setUsername(user.getUsername());
+        userDto.setEmail(user.getEmail());
+
+        dto.setUser(userDto);
+
+        return dto;
     }
 
     @GetMapping(path = "{id}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<Post> getById(@PathVariable Integer id) {
+    public ResponseEntity<PostReadDto> getById(@PathVariable Integer id) {
         final Optional<Post> optional = repository.findByIdWithUser(id);
-        return ResponseEntity.of(optional);
+
+        final Optional<PostReadDto> dtoOptional = optional.map(this::convertToReadDto);
+        return ResponseEntity.of(dtoOptional);
     }
 
     /*
