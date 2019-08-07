@@ -1,5 +1,8 @@
 package br.usp.lucas.applicationbackend.post;
 
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -8,14 +11,12 @@ import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Integer> {
     /*
-    As we are going to need the User mapping, we can use the "join fetch"; it is similar to a SQL join, meaning "Bring
-    me the posts along with the associated user for each of them". In SQL, it is translated to an "inner join".
-
-    Note: We are using "join fetch" because the foreign key reference is required (not null); when it is optional or is
-    a list, we must use "left join fetch", which is translated to a SQL "left join".
+    We wish to use a Query by Example, but method findAll will not fetch the user by default; as an alternative to using
+    join fetch, we can use EntityGraph to specify that this method should fetch the user as we wish.
      */
-    @Query("select p from Post p join fetch p.user")
-    List<Post> findAllWithUser();
+    @Override
+    @EntityGraph(attributePaths = "user")
+    <S extends Post> List<S> findAll(Example<S> example, Sort sort);
 
     @Query("select p from Post p join fetch p.user where p.id = :id")
     Optional<Post> findByIdWithUser(Integer id);

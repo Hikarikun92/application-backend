@@ -2,6 +2,9 @@ package br.usp.lucas.applicationbackend.user;
 
 import br.usp.lucas.applicationbackend.user.dto.UserReadDto;
 import br.usp.lucas.applicationbackend.user.dto.UserWriteDto;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,9 +23,37 @@ public class UserRestController {
         this.repository = repository;
     }
 
+    /*
+    We will use a "Query by example". We could, instead, define separate methods in our Repository class and call them
+    depending on which values were set, but that can lead to some extremely complex conditions depending on the number
+    of filters we want to use. Another option is the "Criteria query", used under the hood by Spring; but that is also
+    really complex to learn from the beginning. The easiest way here is to use the Example queries.
+
+    For sorting, we are using Spring's Sort class; to use it, specify in the URL the field(s) you wish to use and (optionally)
+    the direction of the sort (default: ascending). For example: "...?sort=name&sort=username,desc" will use the name ascending
+    and, if two or more of them are equal, it will use the username descending.
+     */
     @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public List<UserReadDto> getAll() {
-        final List<User> users = repository.findAll();
+    public List<UserReadDto> getAll(@RequestParam(required = false) String name, @RequestParam(required = false) String username,
+                                    @RequestParam(required = false) String email, Sort sort) {
+        //First, we must define an entity with all values null by default and then set only the ones we want to search
+        //for (in our case, "name", "username" and "email"). The non-null fields will be the ones used for the search.
+        //If all the fields are null, no filtering will be performed (returning all entities).
+        final User exampleUser = new User();
+        exampleUser.setName(name);
+        exampleUser.setUsername(username);
+        exampleUser.setEmail(email);
+
+        //Now, we must define a matcher. We can define that we wish one matching ALL the non-null properties of the user
+        //or ANY of them; the default one is ALL.
+        final ExampleMatcher matcher = ExampleMatcher.matching()
+                //The default String matcher is "EXACT", meaning the properties must contain the exact values we passed;
+                //however, we wish that they just "contain" the filters so that we can look by just a part of the value
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+
+        //Now, create an Example object and pass it to the Repository
+        final Example<User> example = Example.of(exampleUser, matcher);
+        final List<User> users = repository.findAll(example, sort);
 
         final List<UserReadDto> dtos = new ArrayList<>(users.size());
         for (User user : users) {

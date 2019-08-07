@@ -5,6 +5,9 @@ import br.usp.lucas.applicationbackend.post.dto.PostWriteDto;
 import br.usp.lucas.applicationbackend.user.User;
 import br.usp.lucas.applicationbackend.user.UserRepository;
 import br.usp.lucas.applicationbackend.user.dto.UserReadDto;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,9 +29,33 @@ public class PostRestController {
         this.userRepository = userRepository;
     }
 
+    /*
+    This method is working great, but notice the amount of RequestParams being passed. Is there a way to simplify this?
+
+    Also, notice that Sort here can reference the User attributes as well: just pass it as "?sort=user.name", for example!
+     */
     @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public List<PostReadDto> getAll() {
-        final List<Post> posts = repository.findAllWithUser();
+    public List<PostReadDto> getAll(@RequestParam(required = false) String title, @RequestParam(required = false) String body,
+                                    @RequestParam(required = false) Integer userId, @RequestParam(required = false) String userName,
+                                    @RequestParam(required = false) String userUsername, @RequestParam(required = false) String userEmail,
+                                    Sort sort) {
+        final Post examplePost = new Post();
+        examplePost.setTitle(title);
+        examplePost.setBody(body);
+
+        final User exampleUser = new User();
+        exampleUser.setId(userId);
+        exampleUser.setName(userName);
+        exampleUser.setUsername(userUsername);
+        exampleUser.setEmail(userEmail);
+
+        examplePost.setUser(exampleUser);
+
+        final ExampleMatcher matcher = ExampleMatcher.matching()
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+
+        final Example<Post> example = Example.of(examplePost, matcher);
+        final List<Post> posts = repository.findAll(example, sort);
 
         final List<PostReadDto> dtos = new ArrayList<>(posts.size());
         for (Post post : posts) {

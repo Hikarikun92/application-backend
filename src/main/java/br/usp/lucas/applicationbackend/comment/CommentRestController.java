@@ -4,6 +4,9 @@ import br.usp.lucas.applicationbackend.comment.dto.CommentReadDto;
 import br.usp.lucas.applicationbackend.comment.dto.CommentWriteDto;
 import br.usp.lucas.applicationbackend.post.Post;
 import br.usp.lucas.applicationbackend.post.PostRepository;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,8 +37,25 @@ public class CommentRestController {
     Alternative: GET method with URL "/posts/{postId}/comments"
      */
     @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public List<CommentReadDto> getAllByPostId(@RequestParam Integer postId) {
-        final List<Comment> comments = repository.getAllByPostId(postId);
+    public List<CommentReadDto> getAllByPostId(@RequestParam(required = false) String title, @RequestParam(required = false) String body,
+                                               @RequestParam(required = false) String email, @RequestParam Integer postId, Sort sort) {
+        final Comment exampleComment = new Comment();
+        exampleComment.setTitle(title);
+        exampleComment.setBody(body);
+        exampleComment.setEmail(email);
+
+        //Note: setting the example post will accidentally make the query fetch the entity, even though we're only setting
+        //the ID; I haven't figured out a way to avoid that fetching while still enabling a query by example though...
+        final Post examplePost = new Post();
+        examplePost.setId(postId);
+
+        exampleComment.setPost(examplePost);
+
+        final ExampleMatcher matcher = ExampleMatcher.matching()
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+
+        final Example<Comment> example = Example.of(exampleComment, matcher);
+        final List<Comment> comments = repository.findAll(example, sort);
 
         final List<CommentReadDto> dtos = new ArrayList<>(comments.size());
         for (Comment comment : comments) {
