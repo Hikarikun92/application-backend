@@ -3,6 +3,7 @@ package br.usp.lucas.applicationbackend.post;
 import br.usp.lucas.applicationbackend.post.dto.PostReadDto;
 import br.usp.lucas.applicationbackend.post.dto.PostWriteDto;
 import br.usp.lucas.applicationbackend.user.User;
+import br.usp.lucas.applicationbackend.user.UserFilter;
 import br.usp.lucas.applicationbackend.user.UserRepository;
 import br.usp.lucas.applicationbackend.user.dto.UserReadDto;
 import org.springframework.data.domain.Example;
@@ -30,26 +31,30 @@ public class PostRestController {
     }
 
     /*
-    This method is working great, but notice the amount of RequestParams being passed. Is there a way to simplify this?
+    To reference the User attributes in the filter, use it like "user.id", "user.name" etc., where "user" is the name of
+    the property in the PostFilter. If the getter and setter for it were called "getUserFilter" and "setUserFilter", for
+    example, the parameter to use would have to match it (e.g. "userFilter.id", "userFilter.name" etc.).
 
     Also, notice that Sort here can reference the User attributes as well: just pass it as "?sort=user.name", for example!
+    However, in that case, if must match the name of the field in entity Post instead of the property of the filter.
+    As a good practice, we should make both the properties in the entity and in the filter have the same names.
      */
     @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public List<PostReadDto> getAll(@RequestParam(required = false) String title, @RequestParam(required = false) String body,
-                                    @RequestParam(required = false) Integer userId, @RequestParam(required = false) String userName,
-                                    @RequestParam(required = false) String userUsername, @RequestParam(required = false) String userEmail,
-                                    Sort sort) {
+    public List<PostReadDto> getAll(PostFilter filter, Sort sort) {
         final Post examplePost = new Post();
-        examplePost.setTitle(title);
-        examplePost.setBody(body);
+        examplePost.setTitle(filter.getTitle());
+        examplePost.setBody(filter.getBody());
 
-        final User exampleUser = new User();
-        exampleUser.setId(userId);
-        exampleUser.setName(userName);
-        exampleUser.setUsername(userUsername);
-        exampleUser.setEmail(userEmail);
+        final UserFilter user = filter.getUser();
+        if (user != null) {
+            final User exampleUser = new User();
+            exampleUser.setId(user.getId());
+            exampleUser.setName(user.getName());
+            exampleUser.setUsername(user.getUsername());
+            exampleUser.setEmail(user.getEmail());
 
-        examplePost.setUser(exampleUser);
+            examplePost.setUser(exampleUser);
+        }
 
         final ExampleMatcher matcher = ExampleMatcher.matching()
                 .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);

@@ -35,14 +35,15 @@ public class CommentRestController {
 
     /*
     Alternative: GET method with URL "/posts/{postId}/comments"
+
+    Note: we are keeping postId as a separate filter so that we can make it required.
      */
     @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public List<CommentReadDto> getAllByPostId(@RequestParam(required = false) String title, @RequestParam(required = false) String body,
-                                               @RequestParam(required = false) String email, @RequestParam Integer postId, Sort sort) {
+    public List<CommentReadDto> getAllByPostId(CommentFilter filter, @RequestParam Integer postId, Sort sort) {
         final Comment exampleComment = new Comment();
-        exampleComment.setTitle(title);
-        exampleComment.setBody(body);
-        exampleComment.setEmail(email);
+        exampleComment.setTitle(filter.getTitle());
+        exampleComment.setBody(filter.getBody());
+        exampleComment.setEmail(filter.getEmail());
 
         //Note: setting the example post will accidentally make the query fetch the entity, even though we're only setting
         //the ID; I haven't figured out a way to avoid that fetching while still enabling a query by example though...

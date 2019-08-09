@@ -34,15 +34,16 @@ public class UserRestController {
     and, if two or more of them are equal, it will use the username descending.
      */
     @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public List<UserReadDto> getAll(@RequestParam(required = false) String name, @RequestParam(required = false) String username,
-                                    @RequestParam(required = false) String email, Sort sort) {
+    public List<UserReadDto> getAll(UserFilter filter, Sort sort) {
         //First, we must define an entity with all values null by default and then set only the ones we want to search
         //for (in our case, "name", "username" and "email"). The non-null fields will be the ones used for the search.
         //If all the fields are null, no filtering will be performed (returning all entities).
         final User exampleUser = new User();
-        exampleUser.setName(name);
-        exampleUser.setUsername(username);
-        exampleUser.setEmail(email);
+        //Note: we are ignoring the user's ID possibly passed as parameter because we could call /users/{id} instead, but
+        //feel free to set it if you think it is necessary.
+        exampleUser.setName(filter.getName());
+        exampleUser.setUsername(filter.getUsername());
+        exampleUser.setEmail(filter.getEmail());
 
         //Now, we must define a matcher. We can define that we wish one matching ALL the non-null properties of the user
         //or ANY of them; the default one is ALL.
