@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@CrossOrigin //Allow the endpoints to be called externally (from another web page, desktop/mobile applications etc.)
 @RestController
 @RequestMapping("users")
 public class UserRestController {

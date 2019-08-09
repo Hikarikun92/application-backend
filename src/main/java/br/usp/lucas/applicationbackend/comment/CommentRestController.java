@@ -22,6 +22,7 @@ An alternative to this endpoint would be to manage the comments as other methods
 Doing so is also a nice way because it shows that comments are like an attribute of a post, always being associated to one.
 In that case, CommentWriteDto would also not need the postId attribute.
  */
+@CrossOrigin
 @RestController
 @RequestMapping("comments")
 public class CommentRestController {
